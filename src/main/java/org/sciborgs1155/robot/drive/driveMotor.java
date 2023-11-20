@@ -6,9 +6,9 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import org.sciborgs1155.lib.constants.*;
 import org.sciborgs1155.robot.Ports.Drive;
 
-public class driveMotor {
+public class DriveMotor {
 
-    public driveMotor(){
+    public DriveMotor(){
       CANSparkMax Rmotor = SparkUtils.create(
         Drive.RdrivePort,
             s -> {

@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -59,11 +60,19 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
 
   // @Log private double speedMultiplier = 1;
 
+  DriveMotor drive = new driveMotor();
+
   public static Drive create() {
     return Robot.isReal()
         ? new Drive(
-            new driveMotor();
-        : new Drive(new SimMotor);
+            new DriveMotor();
+            )
+        : new simDrive;
+  }
+
+
+  public Drive(LeadMotorIO ){
+
   }
 
   // public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
