@@ -9,17 +9,9 @@ public final class Ports {
     public static final int RIGHT_STICK = 3;
   }
 
-  public static final class Drive {
-    public static final int FRONT_LEFT_DRIVE = 1;
-    public static final int REAR_LEFT_DRIVE = 38;
-    public static final int FRONT_RIGHT_DRIVE = 32;
-    public static final int REAR_RIGHT_DRIVE = 5;
-
-    public static final int FRONT_LEFT_TURNING = 31;
-    public static final int REAR_LEFT_TURNING = 36;
-    public static final int FRONT_RIGHT_TURNING = 3;
-    public static final int REAR_RIGHT_TURNING = 40;
-
-    public static final int PIGEON = 42;
+  public static final class Intake {
+    public static final int ROTATION_MOTOR = -1;
+    public static final int WHEEL_MOTOR = -1;
+    public static final int[] ENCODER = new int[] {-1, -1};
   }
 }
