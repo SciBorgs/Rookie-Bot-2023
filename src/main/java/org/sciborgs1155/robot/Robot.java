@@ -2,8 +2,9 @@ package org.sciborgs1155.robot;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
@@ -28,9 +29,11 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
+  private final Joystick joystickL = new Joystick(OI.LEFT_JOYSTICK);
+  private final Joystick joystickR = new Joystick(OI.RIGHT_JOYSTICK);
 
   // SUBSYSTEMS
-  @Log Drive drive = Drive.create();
+  @Log Drive drive = new Drive();
 
   // COMMANDS
   @Log Autos autos = new Autos();
@@ -41,7 +44,7 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
 
     configureGameBehavior();
     configureBindings();
-    configureSubsystemDefaults();
+    // configureSubsystemDefaults();
   }
 
   /** Configures basic behavior during different parts of the game. */
@@ -63,22 +66,27 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
    * Configures subsystem default commands. Default commands are scheduled when no other command is
    * running on a subsystem.
    */
-  private void configureSubsystemDefaults() {
+  // private void configureSubsystemDefaults() {
+  //   drive.setDefaultCommand(
+  //       drive
+  //           .drive(() -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX())
+  //           .withName("teleop driving"));
+  // }
+
+  private void configureJoysticks() {
     drive.setDefaultCommand(
-        drive
-            .drive(() -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX())
-            .withName("teleop driving"));
+        new RunCommand(() -> drive.setVoltage(() -> joystickL.getY(), () -> joystickR.getY())));
   }
 
   /** Configures trigger -> command bindings */
   private void configureBindings() {
-    // DRIVER INPUT
-    driver.b().onTrue(drive.zeroHeading());
-    driver.leftBumper().onTrue(drive.setSpeedMultiplier(0.3)).onFalse(drive.setSpeedMultiplier(1));
-    driver.rightBumper().onTrue(drive.setSpeedMultiplier(0.3)).onFalse(drive.setSpeedMultiplier(1));
+    // // DRIVER INPUT
+    // driver.b().onTrue(drive.zeroHeading());
+    // driver.leftBumper().onTrue(drive.setSpeedMultiplier(0.3)).onFalse(drive.setSpeedMultiplier(1));
+    // driver.rightBumper().onTrue(drive.setSpeedMultiplier(0.3)).onFalse(drive.setSpeedMultiplier(1));
 
-    // FAILING BEHAVIOR
-    drive.onFailing(Commands.print("drive is failing!"));
+    // // FAILING BEHAVIOR
+    // drive.onFailing(Commands.print("drive is failing!"));
   }
 
   @Override
