@@ -15,7 +15,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.TrapezoidProfileCommand;
 import org.sciborgs1155.lib.constants.SparkUtils;
@@ -60,13 +59,17 @@ public class Intake extends SubsystemBase {
     return new State(getAngle(), rotationEncoder.getRate());
   }
 
-  public State getDesiredState(double distance) {
+  public State calculateDesiredState(double distance) {
     return new State(); // func(distance) = desiredAngle --> convert to desired state
   }
 
-  public CommandBase followProfile(State goal) {
+  public Command followProfile(State goal) {
     return new TrapezoidProfileCommand(
         new TrapezoidProfile(CONSTRAINTS, goal, getCurrentState()), this::setAngle);
+  }
+
+  public Command goToFromAngle(double distance) {
+    return followProfile(calculateDesiredState(distance));
   }
 
   public Command setAngle(State setpoint) {
