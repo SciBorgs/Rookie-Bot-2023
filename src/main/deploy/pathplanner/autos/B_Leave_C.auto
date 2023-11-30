@@ -1,0 +1,30 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.9304771301850319,
+      "y": 1.0502066196440099
+    },
+    "rotation": 179.53717345223532
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "B_Leave_C"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "B_Re-enter_C"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "R-K. BOT"
+}

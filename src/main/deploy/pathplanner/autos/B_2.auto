@@ -1,0 +1,48 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.9401120533010314,
+      "y": 1.0887463121080094
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_M"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Bump_2_1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Bump_2_2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Score_L"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "R-K. BOT"
+}

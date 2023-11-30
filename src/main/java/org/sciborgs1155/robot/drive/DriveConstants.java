@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.drive;
 
-import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Translation2d;
 import org.sciborgs1155.lib.constants.BasicFFConstants;
 import org.sciborgs1155.lib.constants.PIDConstants;
@@ -9,6 +9,7 @@ public final class DriveConstants {
   public static final double MAX_SPEED = 4.8; // m / s
   public static final double MAX_ANGULAR_SPEED = 2 * Math.PI; // rad / s
   public static final double MAX_ACCEL = 6.5; // m / s^2
+  public static final double MAX_ANGULAR_ACCEL = 0.5 * Math.PI;
 
   public static final double TRACK_WIDTH = 0.5715;
   // Distance between centers of right and left wheels on robot
@@ -39,7 +40,7 @@ public final class DriveConstants {
   public static final PIDConstants ROTATION = new PIDConstants(0.4, 0, 0);
 
   public static final PathConstraints CONSTRAINTS =
-      new PathConstraints(MAX_SPEED / 1.9, MAX_ACCEL / 1.4);
+      new PathConstraints(MAX_SPEED / 1.9, MAX_ACCEL / 1.4, MAX_ANGULAR_SPEED, MAX_ANGULAR_ACCEL);
 
   public static final class SwerveModule {
     public static final class Driving {

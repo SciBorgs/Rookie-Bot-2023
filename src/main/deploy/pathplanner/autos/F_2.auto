@@ -1,0 +1,30 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.9304771301850319,
+      "y": 4.383890017780035
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Flat_2_1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Flat_2_2"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "R-K. BOT"
+}
