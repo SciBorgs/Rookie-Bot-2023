@@ -4,32 +4,29 @@
 
 package org.sciborgs1155.robot.drive;
 
-import static org.sciborgs1155.robot.Ports.DrivePorts;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.AnalogEncoder;
-import edu.wpi.first.wpilibj.I2C.Port;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
-import java.nio.channels.Channel;
 import java.util.List;
 import java.util.function.Supplier;
-import org.sciborgs1155.lib.constants.SparkUtils;
-
 import org.sciborgs1155.lib.failure.Fallible;
 import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Ports.DrivePorts;
+
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 
 public class Drive extends SubsystemBase implements Fallible, Loggable, AutoCloseable{
 
@@ -51,13 +48,14 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
 
   @Log private double heading;
   
-  @Log private PIDController RdrivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
-  @Log private PIDController LdrivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
+  @Log private final PIDController RdrivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
+  @Log private final PIDController LdrivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
 
-  @Log private SimpleMotorFeedforward RdriveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
-  @Log private SimpleMotorFeedforward LdriveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
+  @Log private final SimpleMotorFeedforward RdriveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
+  @Log private final SimpleMotorFeedforward LdriveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
 
   @Log private double setPoint;
+  
 
   /**
    * Encoders PID and FF controllers 
@@ -67,17 +65,20 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
    * Style
    */
   
+
   //setting up pose origin, facing in pos-X direction
   private final Pose2d pose = new Pose2d();
-  //sets up Pose Estimator
+  //sets up Odometry
+  private DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(ROBOT_TRACK);
+
   private final DifferentialDrivePoseEstimator odometry = 
     new DifferentialDrivePoseEstimator(
-      null, 
+      kinematics,
       gyro.getRotation2d(), 
-      leftEncoder.getDistance(), 
-      rightEncoder.getDistance(), 
-      pose
-    )
+      leftEncoder.getPosition(), 
+      rightEncoder.getPosition(), 
+      pose);
+    
 
 //Parameters:
 // kinematics A correctly-configured kinematics object for your drivetrain.
@@ -85,6 +86,8 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
 
   /** Creates a new Drive. */
   public Drive(){
+    leftEncoder.setPositionConversionFactor(DriveConstants.GEAR_RATIO * DriveConstants.WHEEL_CIRCUMFERENCE);
+    rightEncoder.setPositionConversionFactor(DriveConstants.GEAR_RATIO * DriveConstants.WHEEL_CIRCUMFERENCE);
 
   }
 
@@ -93,22 +96,26 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
     FLmotor.setVoltage(voltageL.get() * MAX_SPEED);
   }
 
+  public void setSpeed(DifferentialDriveWheelSpeeds speeds){
+    double lFF = LdriveFF.calculate(speeds.leftMetersPerSecond);
+    double rFF = RdriveFF.calculate(speeds.rightMetersPerSecond);
+
+    double lFB = LdrivePID.calculate(leftEncoder.getVelocity(), speeds.leftMetersPerSecond);
+    double rFB = RdrivePID.calculate(rightEncoder.getVelocity(), speeds.rightMetersPerSecond);
+
+    setVoltage(() -> rFF+rFB, () -> lFF+lFB);
+  }
+
   public Pose2d getPose() {
-    return odometry.getEstimatedPosition();
+    return odometry.getPoseMeters();
   }
-
-  public void setDesiredSetpoint(){
-
-  }
-
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    odometry.update(gyro.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
-
-    RdrivePID.calculate();
-    LdrivePID.calculate();
+    odometry.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+    //wheel speeds
+    DifferentialDriveWheelSpeeds speeds = new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
 
   }
 
