@@ -14,14 +14,16 @@ public final class Ports {
 
   public static final class DrivePorts {
     // needs to be changed sometime soon
-    public static final int FRdrivePort = -1;
-    public static final int FLdrivePort = -1;
-    public static final int MRdrivePort = -1;
-    public static final int MLdrivePort = -1;
-    public static final int BRdrivePort = -1;
-    public static final int BLdrivePort = -1;
+    public static final int FR_DRIVE_PORT = -1;
+    public static final int FL_DRIVE_PORT = -1;
+    public static final int MR_DRIVE_PORT = -1;
+    public static final int ML_DRIVE_PORT = -1;
+    public static final int BR_DRIVE_PORT = -1;
+    public static final int BL_DRIVE_PORT = -1;
 
-    public static final int rightEncoderPort = -1;
-    public static final int leftEncoderPort = -1;
+    public static final int RIGHT_ENCODER_PORT = -1;
+    public static final int LEFT_ENCODER_PORT = -1;
+
+    public static final int GYRO_PORT = -1;
   }
 }

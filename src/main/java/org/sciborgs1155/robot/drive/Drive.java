@@ -29,21 +29,21 @@ import org.sciborgs1155.robot.Ports.DrivePorts;
 
 public class Drive extends SubsystemBase implements Fallible, Loggable, AutoCloseable{
   // Gyro
-  @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(0);
+  @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.GYRO_PORT);
   //Right and Left side encoders
-  @Log private final AnalogEncoder rightEncoder = new AnalogEncoder(DrivePorts.rightEncoderPort);
-  @Log private final AnalogEncoder leftEncoder = new AnalogEncoder(DrivePorts.leftEncoderPort);
+  @Log private final AnalogEncoder rightEncoder = new AnalogEncoder(DrivePorts.RIGHT_ENCODER_PORT);
+  @Log private final AnalogEncoder leftEncoder = new AnalogEncoder(DrivePorts.LEFT_ENCODER_PORT);
 
 
 //creates StandardDriveMotor
   StandardDriveMotor driveMotor = new StandardDriveMotor();
 //new formatting, check out StandardDriveMotor for more; just added so it is less messy in this document
-  private final CANSparkMax FRmotor = driveMotor.create(DrivePorts.FRdrivePort);
-  private final CANSparkMax FLmotor = driveMotor.create(DrivePorts.FLdrivePort);
-  private final CANSparkMax MRmotor = driveMotor.create(DrivePorts.MRdrivePort);
-  private final CANSparkMax MLmotor = driveMotor.create(DrivePorts.MLdrivePort);
-  private final CANSparkMax BRmotor = driveMotor.create(DrivePorts.BRdrivePort);
-  private final CANSparkMax BLmotor = driveMotor.create(DrivePorts.BLdrivePort);
+  private final CANSparkMax FRmotor = driveMotor.create(DrivePorts.FR_DRIVE_PORT);
+  private final CANSparkMax FLmotor = driveMotor.create(DrivePorts.FL_DRIVE_PORT);
+  private final CANSparkMax MRmotor = driveMotor.create(DrivePorts.MR_DRIVE_PORT);
+  private final CANSparkMax MLmotor = driveMotor.create(DrivePorts.ML_DRIVE_PORT);
+  private final CANSparkMax BRmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
+  private final CANSparkMax BLmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
 
   /**
    * Encoders PID and FF controllers 
@@ -59,7 +59,7 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
   private final DifferentialDrivePoseEstimator odometry = 
     new DifferentialDrivePoseEstimator(
       null, 
-      null, 
+      gyro.getRotation2d(), 
       leftEncoder.getDistance(), 
       rightEncoder.getDistance(), 
       pose
@@ -77,10 +77,15 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
     FLmotor.setVoltage(voltageL.get() * MAX_SPEED);
   }
 
+  public Pose2d getPose() {
+    return odometry.getEstimatedPosition();
+  }
+
+
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    odometry.update(null, leftEncoder.getDistance(), rightEncoder.getDistance());
+    odometry.update(gyro.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
   }
 
   @Override
