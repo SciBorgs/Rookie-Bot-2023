@@ -9,12 +9,22 @@ import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.constants.SparkUtils;
 // create a file and just copy + paste all of that there later
 
 public class Drive extends SubsystemBase {
+
+  //Right and Left side encoders
+  
+
+
+
   private final CANSparkMax FRmotor =
       SparkUtils.create(
           FRdrivePort,
@@ -80,11 +90,33 @@ public class Drive extends SubsystemBase {
 
   /**
    * Encoders PID and FF controllers 
-   * DifferentialDriveOdometry 
+   * DifferentialDriveOdometry  _>> working on this rn
    * Getters for pose, encoder values
    * Setters for setpoints and other important values
    * Style
    */
+  //setting up pose origin, facing in pos-X direction
+  private final Pose2d pose = new Pose2d();
+  private final DifferentialDrivePoseEstimator odometry = 
+    new DifferentialDrivePoseEstimator(
+      // null, 
+      // null, 
+      // null, 
+      // null, 
+      // pose
+    )
+
+//Parameters:
+
+// kinematics A correctly-configured kinematics object for your drivetrain.
+
+// gyroAngle The current gyro angle.
+
+// leftDistanceMeters The distance traveled by the left encoder.
+
+// rightDistanceMeters The distance traveled by the right encoder.
+
+// initialPoseMeters The starting pose estimate.
 
   /** Creates a new Drive. */
   public Drive() {}
@@ -97,5 +129,6 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
   }
 }
