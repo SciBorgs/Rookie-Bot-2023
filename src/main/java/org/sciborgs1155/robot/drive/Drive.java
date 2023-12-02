@@ -9,6 +9,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -31,21 +32,8 @@ import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Ports.DrivePorts;
 
 public class Drive extends SubsystemBase implements Fallible, Loggable, AutoCloseable{
-  // Gyro
-  @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.GYRO_PORT);
-  //Right and Left side encoders
-  @Log private final AnalogEncoder rightEncoder = new AnalogEncoder(DrivePorts.RIGHT_ENCODER_PORT);
-  @Log private final AnalogEncoder leftEncoder = new AnalogEncoder(DrivePorts.LEFT_ENCODER_PORT);
 
-  @Log private double heading;
-  
-  @Log private PIDController drivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
-  @Log private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
-
-  @Log private double setPoint;
-
-
-//creates StandardDriveMotor
+  //creates StandardDriveMotor
   StandardDriveMotor driveMotor = new StandardDriveMotor();
 //new formatting, check out StandardDriveMotor for more; just added so it is less messy in this document
   private final CANSparkMax FRmotor = driveMotor.create(DrivePorts.FR_DRIVE_PORT);
@@ -54,6 +42,22 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
   private final CANSparkMax MLmotor = driveMotor.create(DrivePorts.ML_DRIVE_PORT);
   private final CANSparkMax BRmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
   private final CANSparkMax BLmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
+
+  // Gyro
+  @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.GYRO_PORT);
+  //Right and Left side encoders
+  @Log private final RelativeEncoder rightEncoder = FRmotor.getEncoder();
+  @Log private final RelativeEncoder leftEncoder = FLmotor.getEncoder();
+
+  @Log private double heading;
+  
+  @Log private PIDController RdrivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
+  @Log private PIDController LdrivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
+
+  @Log private SimpleMotorFeedforward RdriveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
+  @Log private SimpleMotorFeedforward LdriveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
+
+  @Log private double setPoint;
 
   /**
    * Encoders PID and FF controllers 
@@ -103,7 +107,8 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
     // This method will be called once per scheduler run
     odometry.update(gyro.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
 
-    drivePID.calculate();
+    RdrivePID.calculate();
+    LdrivePID.calculate();
 
   }
 
