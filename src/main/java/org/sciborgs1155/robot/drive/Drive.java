@@ -12,6 +12,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.AnalogEncoder;
@@ -35,6 +36,13 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
   //Right and Left side encoders
   @Log private final AnalogEncoder rightEncoder = new AnalogEncoder(DrivePorts.RIGHT_ENCODER_PORT);
   @Log private final AnalogEncoder leftEncoder = new AnalogEncoder(DrivePorts.LEFT_ENCODER_PORT);
+
+  @Log private double heading;
+  
+  @Log private PIDController drivePID = new PIDController(DrivePorts.kP, DrivePorts.kI, DrivePorts.kD);
+  @Log private SimpleMotorFeedforward driveFF = new SimpleMotorFeedforward(DrivePorts.kS, DrivePorts.kV, DrivePorts.kA);
+
+  @Log private double setPoint;
 
 
 //creates StandardDriveMotor
@@ -85,11 +93,18 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
     return odometry.getEstimatedPosition();
   }
 
+  public void setDesiredSetpoint(){
+
+  }
+
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     odometry.update(gyro.getRotation2d(), leftEncoder.getDistance(), rightEncoder.getDistance());
+
+    drivePID.calculate();
+
   }
 
   @Override
