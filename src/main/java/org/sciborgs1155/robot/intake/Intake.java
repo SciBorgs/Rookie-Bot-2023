@@ -51,31 +51,66 @@ public class Intake extends SubsystemBase {
     rotationEncoder.setDistancePerPulse(CONVERSION);
   }
 
+  /**
+   * Gets the position of the arm.
+   *
+   * @return The current position of the arm
+   */
   public double getAngle() {
     return rotationEncoder.getDistance();
   }
 
+  /**
+   * Gets the state of the arm.
+   *
+   * @return The current state.
+   */
   public State getCurrentState() {
     return new State(getAngle(), rotationEncoder.getRate());
   }
 
+  /**
+   * Uses a best-fit line to calculate the arm state necessary to shoot cubes a certain distance.
+   *
+   * @param distance
+   * @return The desired state.
+   */
   public State calculateDesiredState(double distance) {
     return new State(); // func(distance) = desiredAngle --> convert to desired state
   }
 
-  public Command followProfile(State goal) {
-    return new TrapezoidProfileCommand(
-        new TrapezoidProfile(CONSTRAINTS, goal, getCurrentState()), this::setAngle);
-  }
-
+  /**
+   * Moves directly to an goal given a distance.
+   *
+   * @param distance
+   * @return The command to move to the goal.
+   */
   public Command goToFromAngle(double distance) {
     return followProfile(calculateDesiredState(distance));
   }
 
+  /**
+   * Moves the arm towards an angle.
+   *
+   * @param setpoint
+   * @return The command to move the arm to the desired angle.
+   */
   public Command setAngle(State setpoint) {
     double feedforward = ff.calculate(setpoint.position, setpoint.velocity);
     double feedback = pid.calculate(getAngle(), setpoint.position);
     return run(() -> rotateMotor.setVoltage(feedforward + feedback));
+  }
+
+  /**
+   * Uses a trapezoidal profile to smoothen movement to a goal by successively traveling to
+   * intermediate setpoints.
+   *
+   * @param goal
+   * @return The command to run the TrapezoidProfile
+   */
+  public Command followProfile(State goal) {
+    return new TrapezoidProfileCommand(
+        new TrapezoidProfile(CONSTRAINTS, goal, getCurrentState()), this::setAngle);
   }
 
   public Command intake() {
