@@ -21,10 +21,12 @@ import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 import java.nio.channels.Channel;
+import java.util.List;
 import java.util.function.Supplier;
 import org.sciborgs1155.lib.constants.SparkUtils;
 
 import org.sciborgs1155.lib.failure.Fallible;
+import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Ports.DrivePorts;
 
 public class Drive extends SubsystemBase implements Fallible, Loggable, AutoCloseable{
@@ -70,7 +72,9 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
 // gyroAngle The current gyro angle.
 
   /** Creates a new Drive. */
-  public Drive() {}
+  public Drive(){
+
+  }
 
   public void setVoltage(Supplier<Double> voltageR, Supplier<Double> voltageL) {
     FRmotor.setVoltage(voltageR.get() * MAX_SPEED);
@@ -89,5 +93,20 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
   }
 
   @Override
-  .close();
+  //closing everything that needs to be closed
+  public void close() throws Exception {
+    FRmotor.close();
+    FLmotor.close();
+    MRmotor.close();
+    MLmotor.close();
+    BRmotor.close();
+    BLmotor.close();
+    gyro.close();
+  }
+
+  //add getFaults() here later
+
+  public List<HardwareFault> getFaults(){
+    
+  }
 }
