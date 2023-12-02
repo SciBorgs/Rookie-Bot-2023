@@ -12,7 +12,7 @@ public final class Ports {
     public static final int RIGHT_JOYSTICK = -1;
   }
 
-  public static final class Drive {
+  public static final class DrivePorts {
     // needs to be changed sometime soon
     public static final int FRdrivePort = -1;
     public static final int FLdrivePort = -1;
@@ -20,5 +20,8 @@ public final class Ports {
     public static final int MLdrivePort = -1;
     public static final int BRdrivePort = -1;
     public static final int BLdrivePort = -1;
+
+    public static final int rightEncoderPort = -1;
+    public static final int leftEncoderPort = -1;
   }
 }
