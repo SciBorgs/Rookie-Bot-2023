@@ -22,6 +22,9 @@ import io.github.oblarg.oblog.annotations.Log;
 
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.management.ConstructorParameters;
+
 import org.sciborgs1155.lib.failure.Fallible;
 import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Ports.DrivePorts;
@@ -107,7 +110,18 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
   }
 
   public Pose2d getPose() {
-    return odometry.getPoseMeters();
+    return odometry.getEstimatedPosition();
+  }
+  // either "right" "Right" "left" or "Left" is available for String side, otherwise returns null
+
+  public RelativeEncoder getEncoder(String side){
+    return side.equals("right") ||
+     side.equals("Right") 
+     ? rightEncoder 
+     : (side.equals("left") || 
+      side.equals("Left") 
+      ? leftEncoder 
+      : null);
   }
 
   @Override

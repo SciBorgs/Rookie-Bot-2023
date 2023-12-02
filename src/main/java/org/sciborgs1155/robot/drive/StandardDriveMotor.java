@@ -9,7 +9,9 @@ public class StandardDriveMotor {
     public StandardDriveMotor() {};
 
     public CANSparkMax create(int port){
-        final CANSparkMax motor =
+        
+        CANSparkMax motor =
+        
         SparkUtils.create(
             port,
             s -> {
