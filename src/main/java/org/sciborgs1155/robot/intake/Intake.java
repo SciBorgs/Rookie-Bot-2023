@@ -14,7 +14,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.TrapezoidProfileCommand;
 import org.sciborgs1155.lib.constants.SparkUtils;
@@ -54,7 +54,7 @@ public class Intake extends SubsystemBase {
   /**
    * Gets the position of the arm.
    *
-   * @return The current position of the arm
+   * @return The current position of the arm, in radians
    */
   public double getAngle() {
     return rotationEncoder.getDistance();
@@ -70,34 +70,44 @@ public class Intake extends SubsystemBase {
   }
 
   /**
-   * Uses a best-fit line to calculate the arm state necessary to shoot cubes a certain distance.
+   * Moves the arm to a desired radian.
    *
-   * @param distance
-   * @return The desired state.
+   * @param goal
+   * @return The command to move the arm to the desired angle.
    */
-  public State calculateDesiredState(double distance) {
-    return new State(); // func(distance) = desiredAngle --> convert to desired state
+  public CommandBase goTo(double goal) {
+    return followProfile(new State(goal, 0));
   }
 
   /**
-   * Moves directly to an goal given a distance.
+   * Moves the arm to a desired state.
+   *
+   * @param goal
+   * @return The command to move the arm to the desired state.
+   */
+  public CommandBase goTo(State state) {
+    return followProfile(state);
+  }
+
+  /**
+   * Moves arm directly to a goal given a distance.
    *
    * @param distance
    * @return The command to move to the goal.
    */
-  public Command goToFromAngle(double distance) {
-    return followProfile(calculateDesiredState(distance));
+  public CommandBase goToAngleFromDistance(double distance) {
+    return followProfile(calculateGoalFromDistance(distance));
   }
 
   /**
-   * Moves the arm towards an angle.
+   * Moves the arm towards a state.
    *
    * @param setpoint
-   * @return The command to move the arm to the desired angle.
+   * @return The command to move the arm to the desired state.
    */
-  public Command setAngle(State setpoint) {
+  private CommandBase setState(State setpoint) {
     double feedforward = ff.calculate(setpoint.position, setpoint.velocity);
-    double feedback = pid.calculate(getAngle(), setpoint.position);
+    double feedback = pid.calculate(rotationEncoder.getRate(), setpoint.velocity);
     return run(() -> rotateMotor.setVoltage(feedforward + feedback));
   }
 
@@ -108,16 +118,27 @@ public class Intake extends SubsystemBase {
    * @param goal
    * @return The command to run the TrapezoidProfile
    */
-  public Command followProfile(State goal) {
+  private CommandBase followProfile(State goal) {
     return new TrapezoidProfileCommand(
-        new TrapezoidProfile(CONSTRAINTS, goal, getCurrentState()), this::setAngle);
+        new TrapezoidProfile(CONSTRAINTS, goal, getCurrentState()), this::setState);
   }
 
-  public Command intake() {
+  /**
+   * Uses a best-fit line to calculate the arm state necessary to shoot cubes a certain distance
+   * (m/s). TODO
+   *
+   * @param distance
+   * @return The desired goal.
+   */
+  public State calculateGoalFromDistance(double distance) {
+    return new State();
+  }
+
+  public CommandBase intake() {
     return run(() -> wheels.set(INTAKE_SPEED));
   }
 
-  public Command outtake() {
+  public CommandBase outtake() {
     return run(() -> wheels.set(OUTTAKE_SPEED));
   }
 
