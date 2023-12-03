@@ -25,13 +25,5 @@ public final class Ports {
     public static final int LEFT_ENCODER_PORT = -1;
 
     public static final int GYRO_PORT = -1;
-
-    public static final double kP = 1;
-    public static final double kI = 0;
-    public static final double kD = 1; 
-
-    public static final double kS = 1;
-    public static final double kV = 1;
-    public static final double kA = 1;
   }
 }

@@ -13,4 +13,12 @@ public class DriveConstants {
   public static final double ROBOT_TRACK = 0; // (meters)
   public static final double WHEEL_RADIUS = 0; // (meters)
   public static final double WHEEL_CIRCUMFERENCE = WHEEL_RADIUS * 2 * Math.PI;
+
+  public static final double kP = 1;
+  public static final double kI = 0;
+  public static final double kD = 1; 
+
+  public static final double kS = 1;
+  public static final double kV = 1;
+  public static final double kA = 1;
 }
