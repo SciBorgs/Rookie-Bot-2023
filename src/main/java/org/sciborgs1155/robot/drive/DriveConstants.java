@@ -1,3 +1,10 @@
+
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package org.sciborgs1155.robot.drive;
+
 package org.sciborgs1155.robot.drive;
 
 import com.pathplanner.lib.path.PathConstraints;
@@ -55,16 +62,21 @@ public final class DriveConstants {
       public static final BasicFFConstants FF = new BasicFFConstants(0.3, 2.7, 0.25);
     }
 
-    public static final class Turning {
-      public static final double MOTOR_GEARING = 1.0 / 4.0 / 3.0;
+/** Add your docs here. */
+public class DriveConstants {
+  public static final double MAX_SPEED = 8;
 
-      public static final double CONVERSION = 2.0 * Math.PI;
+  //change all values to correct ones later
+  public static final double GEAR_RATIO = 0;
+  public static final double ROBOT_TRACK = 0; // (meters)
+  public static final double WHEEL_RADIUS = 0; // (meters)
+  public static final double WHEEL_CIRCUMFERENCE = WHEEL_RADIUS * 2 * Math.PI;
 
-      public static final boolean ENCODER_INVERTED = true;
+  public static final double kP = 1;
+  public static final double kI = 0;
+  public static final double kD = 1; 
 
-      public static final PIDConstants PID = new PIDConstants(2, 0, 0.1);
-      // system constants only used in simulation
-      public static final BasicFFConstants FF = new BasicFFConstants(0, 0.25, 0.015);
-    }
-  }
+  public static final double kS = 1;
+  public static final double kV = 1;
+  public static final double kA = 1;
 }
