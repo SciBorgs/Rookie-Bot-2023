@@ -36,7 +36,7 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
   @Log Drive drive = new Drive();
 
   // COMMANDS
-  @Log Autos autos = new Autos();
+  @Log Autos autos = new Autos(drive);
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -59,7 +59,7 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
 
     addPeriodic(Logger::updateEntries, Constants.PERIOD);
 
-    autonomous().whileTrue(new ProxyCommand(autos::get));
+    autonomous().whileTrue(new ProxyCommand(autos::getAutonomousCommand));
   }
 
   /**

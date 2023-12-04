@@ -1,0 +1,36 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 1.9497469764170317,
+      "y": 2.6592387800160227
+    },
+    "rotation": 180.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center_L.C."
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Center_Balance"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "lock"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "R-K. BOT"
+}
