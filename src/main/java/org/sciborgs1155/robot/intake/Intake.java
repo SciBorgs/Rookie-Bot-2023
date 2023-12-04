@@ -45,7 +45,7 @@ public class Intake extends SubsystemBase {
 
   public Intake() {
     rotationEncoder = new Encoder(ENCODER[0], ENCODER[1]);
-    pid = new PIDController(PID.kP, PID.kI, PID.kD);
+    pid = new PIDController(PID.p(), PID.i(), PID.d());
     ff = new ArmFeedforward(FF.s(), FF.g(), FF.v(), FF.a());
 
     rotationEncoder.setDistancePerPulse(CONVERSION);

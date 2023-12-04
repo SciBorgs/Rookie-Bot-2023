@@ -4,9 +4,9 @@
 
 package org.sciborgs1155.robot.intake;
 
-import com.pathplanner.lib.auto.PIDConstants;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import org.sciborgs1155.lib.constants.ArmFFConstants;
+import org.sciborgs1155.lib.constants.PIDConstants;
 import org.sciborgs1155.robot.Constants;
 
 /** Add your docs here. */
