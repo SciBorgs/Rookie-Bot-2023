@@ -75,7 +75,7 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
 
   private void configureJoysticks() {
     drive.setDefaultCommand(
-        new RunCommand(() -> drive.setVoltage(() -> joystickL.getY(), () -> joystickR.getY())));
+        new RunCommand(()-> drive.setVoltage(joystickL.getY(), joystickR.getY())));
   }
 
   /** Configures trigger -> command bindings */

@@ -7,12 +7,14 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.jni.CANSparkMaxJNI;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.github.oblarg.oblog.Loggable;
@@ -29,8 +31,8 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
-public class Drive extends SubsystemBase implements Fallible, Loggable, AutoCloseable{
 
+public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
   //creates StandardDriveMotor
   StandardDriveMotor driveMotor = new StandardDriveMotor();
 //new formatting, check out StandardDriveMotor for more; just added so it is less messy in this document
@@ -95,11 +97,15 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
     leftEncoder.setVelocityConversionFactor(DriveConstants.GEAR_RATIO);
 
     rightMotors.setInverted(true);
+    
+    // AutoBuilder.configureLTV()
+
+    
   }
 
-  public void setVoltage(Supplier<Double> voltageR, Supplier<Double> voltageL) {
-    rightMotors.setVoltage(voltageR.get() * MAX_SPEED);
-    leftMotors.setVoltage(voltageL.get() * MAX_SPEED);
+  public void setVoltage(double voltageR, double voltageL) {
+    rightMotors.setVoltage(MathUtil.clamp(voltageR, -MAX_SPEED, MAX_SPEED)); 
+    leftMotors.setVoltage(voltageL);
   }
 
   public void setSpeed(DifferentialDriveWheelSpeeds speeds){
@@ -109,7 +115,8 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
     double lFB = LdrivePID.calculate(leftEncoder.getVelocity(), speeds.leftMetersPerSecond);
     double rFB = RdrivePID.calculate(rightEncoder.getVelocity(), speeds.rightMetersPerSecond);
 
-    setVoltage(() -> rFF+rFB, () -> lFF+lFB);
+    setVoltage(rFF+rFB, lFF+lFB);
+
   }
 
   public double[] getVelocity(){
@@ -124,6 +131,12 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
   public Pose2d getPose() {
     return odometry.getEstimatedPosition();
   }
+
+  // public void resetPose(){
+    
+  // }
+
+  //may or may not need the abovee method ^^
 
   public double getPoseDegrees() {
     return getPose().getRotation().getDegrees();
@@ -162,7 +175,7 @@ public class Drive extends SubsystemBase implements Fallible, Loggable, AutoClos
 
   //add getFaults() here later
 
-  public List<HardwareFault> getFaults(){
+  // public List<HardwareFault> getFaults(){
     
-  }
+  // }
 }
