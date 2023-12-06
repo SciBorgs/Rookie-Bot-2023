@@ -6,7 +6,7 @@ package org.sciborgs1155.robot.drive;
 
 /** Add your docs here. */
 public class DriveConstants {
-  public static final double MAX_SPEED = 8;
+  public static final double MAX_VOLTAGE = 12;
 
   //change all values to correct ones later
   public static final double GEAR_RATIO = 0;

@@ -38,19 +38,17 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
 //new formatting, check out StandardDriveMotor for more; just added so it is less messy in this document
   private final CANSparkMax FRmotor = driveMotor.create(DrivePorts.FR_DRIVE_PORT);
   private final CANSparkMax FLmotor = driveMotor.create(DrivePorts.FL_DRIVE_PORT);
-  private final CANSparkMax MRmotor = driveMotor.create(DrivePorts.MR_DRIVE_PORT);
-  private final CANSparkMax MLmotor = driveMotor.create(DrivePorts.ML_DRIVE_PORT);
   private final CANSparkMax BRmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
   private final CANSparkMax BLmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
 
-  private final CANSparkMax[] rightSparks = {FRmotor, MRmotor, BRmotor};
-  private final CANSparkMax[] leftSparks = {FLmotor, MLmotor, BLmotor};
+  private final CANSparkMax[] rightSparks = {FRmotor, BRmotor};
+  private final CANSparkMax[] leftSparks = {FLmotor, BLmotor};
 
   private final MotorControllerGroup rightMotors = new MotorControllerGroup(rightSparks);
   private final MotorControllerGroup leftMotors = new MotorControllerGroup(leftSparks);
 
   // Gyros
-  @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.GYRO_PORT);
+  @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.PIGEON);
   //Right and Left side encoders
   @Log private final RelativeEncoder rightEncoder = FRmotor.getEncoder();
   @Log private final RelativeEncoder leftEncoder = FLmotor.getEncoder();
@@ -104,8 +102,8 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
   }
 
   public void setVoltage(double voltageR, double voltageL) {
-    rightMotors.setVoltage(MathUtil.clamp(voltageR, -MAX_SPEED, MAX_SPEED)); 
-    leftMotors.setVoltage(voltageL);
+    rightMotors.setVoltage(MathUtil.clamp(voltageR, -MAX_VOLTAGE, MAX_VOLTAGE)); 
+    leftMotors.setVoltage(MathUtil.clamp(voltageL, -MAX_VOLTAGE, MAX_VOLTAGE));
   }
 
   public void setSpeed(DifferentialDriveWheelSpeeds speeds){
@@ -119,10 +117,10 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
 
   }
 
-  public double[] getVelocity(){
-    double[] velocities = {rightEncoder.getVelocity(), leftEncoder.getVelocity()};
-    return velocities;
-  }
+  // public double[] getVelocity(){
+  //   double[] velocities = {rightEncoder.getVelocity(), leftEncoder.getVelocity()};
+  //   return velocities;
+  // }
 
   public Rotation2d getRotation() {
     return gyro.getRotation2d();
@@ -144,13 +142,13 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
   
   // either "right" "Right" "left" or "Left" is available for String side, otherwise returns null
 
-  public RelativeEncoder getEncoder(String side){
-    return side.toLowerCase().equals("right")
-     ? rightEncoder 
-     : (side.toLowerCase().equals("left")
-      ? leftEncoder 
-      : null);
-  }
+  // public RelativeEncoder getEncoder(String side){
+  //   return side.toLowerCase().equals("right")
+  //    ? rightEncoder 
+  //    : (side.toLowerCase().equals("left")
+  //     ? leftEncoder 
+  //     : null);
+  // } // NULL is dangerous - note.. commments resolved later
 
   @Override
   public void periodic() {
