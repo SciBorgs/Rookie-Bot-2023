@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.drive;
 
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
+import static org.sciborgs1155.robot.Ports.DrivePorts.*;
 
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.revrobotics.CANSparkMax;
@@ -36,13 +37,13 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
   //creates StandardDriveMotor
   StandardDriveMotor driveMotor = new StandardDriveMotor();
 //new formatting, check out StandardDriveMotor for more; just added so it is less messy in this document
-  private final CANSparkMax FRmotor = driveMotor.create(DrivePorts.FR_DRIVE_PORT);
-  private final CANSparkMax FLmotor = driveMotor.create(DrivePorts.FL_DRIVE_PORT);
-  private final CANSparkMax BRmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
-  private final CANSparkMax BLmotor = driveMotor.create(DrivePorts.BL_DRIVE_PORT);
+  private final CANSparkMax fRightMotor = driveMotor.create(FR_DRIVE_PORT);
+  private final CANSparkMax fLeftMotor = driveMotor.create(FL_DRIVE_PORT);
+  private final CANSparkMax bRightMotor = driveMotor.create(BL_DRIVE_PORT);
+  private final CANSparkMax bLeftMotor = driveMotor.create(BL_DRIVE_PORT);
 
-  private final CANSparkMax[] rightSparks = {FRmotor, BRmotor};
-  private final CANSparkMax[] leftSparks = {FLmotor, BLmotor};
+  private final CANSparkMax[] rightSparks = {fRightMotor, bRightMotor};
+  private final CANSparkMax[] leftSparks = {fLeftMotor, bLeftMotor};
 
   private final MotorControllerGroup rightMotors = new MotorControllerGroup(rightSparks);
   private final MotorControllerGroup leftMotors = new MotorControllerGroup(leftSparks);
@@ -50,16 +51,16 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
   // Gyros
   @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.PIGEON);
   //Right and Left side encoders
-  @Log private final RelativeEncoder rightEncoder = FRmotor.getEncoder();
-  @Log private final RelativeEncoder leftEncoder = FLmotor.getEncoder();
+  @Log private final RelativeEncoder rightEncoder = fRightMotor.getEncoder();
+  @Log private final RelativeEncoder leftEncoder = fLeftMotor.getEncoder();
 
   @Log private double heading;
   
-  @Log private final PIDController RdrivePID = new PIDController(DriveConstants.kP, DriveConstants.kI, DriveConstants.kD);
-  @Log private final PIDController LdrivePID = new PIDController(DriveConstants.kP, DriveConstants.kI, DriveConstants.kD);
+  @Log private final PIDController RdrivePID = new PIDController(kP, kI, kD);
+  @Log private final PIDController LdrivePID = new PIDController(kP,  kI, kD);
 
-  @Log private final SimpleMotorFeedforward RdriveFF = new SimpleMotorFeedforward(DriveConstants.kS, DriveConstants.kV, DriveConstants.kA);
-  @Log private final SimpleMotorFeedforward LdriveFF = new SimpleMotorFeedforward(DriveConstants.kS, DriveConstants.kV, DriveConstants.kA);
+  @Log private final SimpleMotorFeedforward RdriveFF = new SimpleMotorFeedforward(kS, kV, kA);
+  @Log private final SimpleMotorFeedforward LdriveFF = new SimpleMotorFeedforward(kS, kV, kA);
 
   
 
@@ -88,11 +89,11 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
 
   /** Creates a new Drive. */
   public Drive(){
-    leftEncoder.setPositionConversionFactor(DriveConstants.GEAR_RATIO * DriveConstants.WHEEL_CIRCUMFERENCE);
-    rightEncoder.setPositionConversionFactor(DriveConstants.GEAR_RATIO * DriveConstants.WHEEL_CIRCUMFERENCE);
+    leftEncoder.setPositionConversionFactor(GEAR_RATIO * WHEEL_CIRCUMFERENCE);
+    rightEncoder.setPositionConversionFactor(GEAR_RATIO * WHEEL_CIRCUMFERENCE);
 
-    leftEncoder.setVelocityConversionFactor(DriveConstants.GEAR_RATIO);
-    leftEncoder.setVelocityConversionFactor(DriveConstants.GEAR_RATIO);
+    leftEncoder.setVelocityConversionFactor(GEAR_RATIO);
+    leftEncoder.setVelocityConversionFactor(GEAR_RATIO);
 
     rightMotors.setInverted(true);
     
@@ -117,10 +118,9 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
 
   }
 
-  // public double[] getVelocity(){
-  //   double[] velocities = {rightEncoder.getVelocity(), leftEncoder.getVelocity()};
-  //   return velocities;
-  // }
+  public void resetGyro (){
+    gyro.reset();
+  }
 
   public Rotation2d getRotation() {
     return gyro.getRotation2d();
@@ -130,50 +130,19 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
     return odometry.getEstimatedPosition();
   }
 
-  // public void resetPose(){
-    
-  // }
-
-  //may or may not need the abovee method ^^
-
-  public double getPoseDegrees() {
-    return getPose().getRotation().getDegrees();
-  }
-  
-  // either "right" "Right" "left" or "Left" is available for String side, otherwise returns null
-
-  // public RelativeEncoder getEncoder(String side){
-  //   return side.toLowerCase().equals("right")
-  //    ? rightEncoder 
-  //    : (side.toLowerCase().equals("left")
-  //     ? leftEncoder 
-  //     : null);
-  // } // NULL is dangerous - note.. commments resolved later
-
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     odometry.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
-    //wheel speeds
-    speeds = new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
-
   }
 
   @Override
   //closing everything that needs to be closed
   public void close() throws Exception {
-    FRmotor.close();
-    FLmotor.close();
-    MRmotor.close();
-    MLmotor.close();
-    BRmotor.close();
-    BLmotor.close();
+    fRightMotor.close();
+    fLeftMotor.close();
+    bRightMotor.close();
+    bLeftMotor.close();
     gyro.close();
   }
-
-  //add getFaults() here later
-
-  // public List<HardwareFault> getFaults(){
-    
-  // }
 }

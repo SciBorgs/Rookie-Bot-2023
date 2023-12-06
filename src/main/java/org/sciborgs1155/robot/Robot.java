@@ -29,8 +29,8 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
-  private final Joystick joystickL = new Joystick(OI.LEFT_JOYSTICK);
-  private final Joystick joystickR = new Joystick(OI.RIGHT_JOYSTICK);
+  private final Joystick joystickL = new Joystick(OI.LEFT_STICK);
+  private final Joystick joystickR = new Joystick(OI.RIGHT_STICK);
 
   // SUBSYSTEMS
   @Log Drive drive = new Drive();
@@ -87,10 +87,5 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
 
     // // FAILING BEHAVIOR
     // drive.onFailing(Commands.print("drive is failing!"));
-  }
-
-  @Override
-  public List<HardwareFault> getFaults() {
-    return FaultBuilder.create().register(drive.getFaults()).build();
   }
 }

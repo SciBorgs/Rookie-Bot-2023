@@ -7,9 +7,6 @@ public final class Ports {
     public static final int DRIVER = 1;
     public static final int LEFT_STICK = 2;
     public static final int RIGHT_STICK = 3;
-
-    public static final int LEFT_JOYSTICK = -1;
-    public static final int RIGHT_JOYSTICK = -1;
   }
 
   public static final class DrivePorts {
