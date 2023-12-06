@@ -3,6 +3,7 @@ package org.sciborgs1155.robot;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -24,7 +25,7 @@ import org.sciborgs1155.robot.drive.Drive;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
-public class Robot extends CommandRobot implements Fallible, Loggable {
+public class Robot extends CommandRobot implements Loggable {
 
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
@@ -73,9 +74,10 @@ public class Robot extends CommandRobot implements Fallible, Loggable {
   //           .withName("teleop driving"));
   // }
 
-  private void configureJoysticks() {
+  // configureSubsystemDefaults to be consistent with the other naming - note for michael
+  private void configureSubsystemDefaults() {
     drive.setDefaultCommand(
-        new RunCommand(()-> drive.setVoltage(joystickL.getY(), joystickR.getY())));
+        drive.driveTeleop(() -> driver.getLeftY(), () -> driver.getLeftX()));
   }
 
   /** Configures trigger -> command bindings */

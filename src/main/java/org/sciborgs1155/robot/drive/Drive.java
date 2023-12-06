@@ -17,6 +17,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -30,7 +31,9 @@ import org.sciborgs1155.robot.Ports.DrivePorts;
 
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+
 
 
 public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
@@ -51,16 +54,16 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
   // Gyros
   @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.PIGEON);
   //Right and Left side encoders
-  @Log private final RelativeEncoder rightEncoder = fRightMotor.getEncoder();
-  @Log private final RelativeEncoder leftEncoder = fLeftMotor.getEncoder();
-
-  @Log private double heading;
+  private final RelativeEncoder rightEncoder = fRightMotor.getEncoder();
+  private final RelativeEncoder leftEncoder = fLeftMotor.getEncoder();
   
   @Log private final PIDController RdrivePID = new PIDController(kP, kI, kD);
   @Log private final PIDController LdrivePID = new PIDController(kP,  kI, kD);
 
   @Log private final SimpleMotorFeedforward RdriveFF = new SimpleMotorFeedforward(kS, kV, kA);
   @Log private final SimpleMotorFeedforward LdriveFF = new SimpleMotorFeedforward(kS, kV, kA);
+
+  @Log private final DifferentialDrive drive = new DifferentialDrive(fLeftMotor, fRightMotor);
 
   
 
@@ -89,11 +92,11 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
 
   /** Creates a new Drive. */
   public Drive(){
-    leftEncoder.setPositionConversionFactor(GEAR_RATIO * WHEEL_CIRCUMFERENCE);
-    rightEncoder.setPositionConversionFactor(GEAR_RATIO * WHEEL_CIRCUMFERENCE);
-
-    leftEncoder.setVelocityConversionFactor(GEAR_RATIO);
-    leftEncoder.setVelocityConversionFactor(GEAR_RATIO);
+    leftEncoder.setPositionConversionFactor(CONVERSION);
+    rightEncoder.setPositionConversionFactor(CONVERSION);
+    // Velocity conversion factor should be set to the exact same value as position conversion fact, times 60. NOTE FOR SELF - michael
+    leftEncoder.setVelocityConversionFactor(CONVERSION * 60);
+    leftEncoder.setVelocityConversionFactor(CONVERSION * 60);
 
     rightMotors.setInverted(true);
     
@@ -144,5 +147,9 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
     bRightMotor.close();
     bLeftMotor.close();
     gyro.close();
+  }
+
+  public CommandBase driveTeleop(Supplier<Double> speed, Supplier<Double> rotation){
+    return run(() -> drive.arcadeDrive(speed.get(), rotation.get()));
   }
 }
