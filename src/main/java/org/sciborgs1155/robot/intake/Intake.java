@@ -17,23 +17,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.sciborgs1155.lib.constants.SparkUtils;
 
 public class Intake extends SubsystemBase {
-
-  private final CANSparkMax wheels =
-      SparkUtils.create(
-          WHEEL_MOTOR,
-          s -> {
-            s.setIdleMode(IdleMode.kBrake);
-            s.setSmartCurrentLimit(40);
-            s.setOpenLoopRampRate(0);
-          });
-
-  private final Encoder rotationEncoder;
-
-  public Intake() {
-    rotationEncoder = new Encoder(ENCODER[0], ENCODER[1]);
-
-    rotationEncoder.setDistancePerPulse(CONVERSION);
-  }
+  
+  public Intake() {}
 
   public CommandBase intake() {
     return run(() -> wheels.set(INTAKE_SPEED));

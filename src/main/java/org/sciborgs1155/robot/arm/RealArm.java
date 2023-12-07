@@ -26,7 +26,7 @@ public class RealArm implements JointIO {
             s.setSmartCurrentLimit(40);
             s.setOpenLoopRampRate(0);
           });
-
+  // TODO: Align with correct encoder type on real robot
   private final Encoder rotationEncoder;
   private final PIDController pid;
   private final ArmFeedforward ff;
@@ -40,45 +40,27 @@ public class RealArm implements JointIO {
   }
 
   @Override
-  /**
-   * Gets the position of the arm.
-   *
-   * @return The current position of the arm, in radians
-   */
   public double getAngle() {
     return rotationEncoder.getDistance();
   }
 
   @Override
-  /**
-   * Gets the state of the arm.
-   *
-   * @return The current state.
-   */
+  public double getVelocity() {
+    return rotationEncoder.getRate();
+  }
+
+  @Override
   public State getCurrentState() {
     return new State(getAngle(), rotationEncoder.getRate());
   }
 
   @Override
-  /**
-   * Moves the arm towards a state.
-   *
-   * @param setpoint
-   * @return The command to move the arm to the desired state.
-   */
   public void setState(State setpoint) {
     double feedforward = ff.calculate(setpoint.position, setpoint.velocity);
     double feedback = pid.calculate(rotationEncoder.getRate(), setpoint.velocity);
     motor.setVoltage(feedforward + feedback);
   }
 
-  /**
-   * Uses a best-fit line to calculate the arm state necessary to shoot cubes a certain distance
-   * (m/s). TODO
-   *
-   * @param distance
-   * @return The desired goal.
-   */
   public State calculateGoalFromDistance(double distance) {
     return new State();
   }
