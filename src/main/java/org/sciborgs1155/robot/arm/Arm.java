@@ -7,18 +7,23 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.TrapezoidProfileCommand;
+import org.sciborgs1155.lib.DeferredCommand;
 import org.sciborgs1155.robot.Robot;
 
 /** Add your docs here. */
 public class Arm extends SubsystemBase {
   private final JointIO arm;
 
-  private Arm(JointIO arm) {
+  public Arm(JointIO arm) {
     this.arm = arm;
   }
 
   public static Arm create() {
     return Robot.isReal() ? new Arm(new RealArm()) : new Arm(new SimArm());
+  }
+
+  public static Arm createNone() {
+    return new Arm(new NoJoint());
   }
 
   /**
@@ -59,7 +64,12 @@ public class Arm extends SubsystemBase {
    * @return The command to run the TrapezoidProfile
    */
   private CommandBase followProfile(State goal) {
-    return new TrapezoidProfileCommand(
-        new TrapezoidProfile(CONSTRAINTS, goal, arm.getCurrentState()), arm::setState, this);
+    return new DeferredCommand(
+        () ->
+            new TrapezoidProfileCommand(
+                new TrapezoidProfile(CONSTRAINTS, goal, arm.getCurrentState()),
+                arm::setState,
+                this),
+        this);
   }
 }

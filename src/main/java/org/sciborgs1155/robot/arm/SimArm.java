@@ -25,7 +25,7 @@ public class SimArm implements JointIO {
             ARM_LENGTH,
             MIN_ANGLE,
             MAX_ANGLE,
-            false);
+            true);
     pid = new PIDController(PID.p(), PID.i(), PID.d());
     ff = new ArmFeedforward(FF.s(), FF.g(), FF.v(), FF.a());
   }

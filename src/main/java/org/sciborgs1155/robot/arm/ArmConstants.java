@@ -14,7 +14,7 @@ public class ArmConstants {
   public static final ArmFFConstants FF = new ArmFFConstants(0, 0, 0);
   public static final PIDConstants PID = new PIDConstants(0, 0, 0);
 
-  public static final DCMotor GEARBOX = DCMotor.getNEO(1);
+  public static final DCMotor GEARBOX = DCMotor.getNEO(-1);
   public static final double GEARING = -1;
 
   public static final double ARM_LENGTH = -1;

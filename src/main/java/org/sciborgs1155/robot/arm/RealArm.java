@@ -51,7 +51,7 @@ public class RealArm implements JointIO {
 
   @Override
   public State getCurrentState() {
-    return new State(getAngle(), rotationEncoder.getRate());
+    return new State(getAngle(), getVelocity());
   }
 
   @Override
