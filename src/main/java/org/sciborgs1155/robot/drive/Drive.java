@@ -6,6 +6,7 @@ import static org.sciborgs1155.robot.Ports.DrivePorts.*;
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.jni.CANSparkMaxJNI;
 
 import edu.wpi.first.math.MathUtil;
@@ -25,6 +26,7 @@ import io.github.oblarg.oblog.annotations.Log;
 import java.util.List;
 import java.util.function.Supplier;
 
+import org.sciborgs1155.lib.constants.SparkUtils;
 import org.sciborgs1155.lib.failure.Fallible;
 import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Ports.DrivePorts;
@@ -37,13 +39,45 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
 
 public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
-  //creates StandardDriveMotor
-  StandardDriveMotor driveMotor = new StandardDriveMotor();
-//new formatting, check out StandardDriveMotor for more; just added so it is less messy in this document
-  private final CANSparkMax fRightMotor = driveMotor.create(FR_DRIVE_PORT);
-  private final CANSparkMax fLeftMotor = driveMotor.create(FL_DRIVE_PORT);
-  private final CANSparkMax bRightMotor = driveMotor.create(BL_DRIVE_PORT);
-  private final CANSparkMax bLeftMotor = driveMotor.create(BL_DRIVE_PORT);
+  private final CANSparkMax fRightMotor = 
+    SparkUtils.create(
+    FR_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+    });
+
+  private final CANSparkMax fLeftMotor = 
+  SparkUtils.create(
+    FL_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+    });
+
+  private final CANSparkMax bRightMotor = 
+  SparkUtils.create(
+    BR_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+    });
+
+  private final CANSparkMax bLeftMotor = 
+  SparkUtils.create(
+    BL_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+    });
 
   private final CANSparkMax[] rightSparks = {fRightMotor, bRightMotor};
   private final CANSparkMax[] leftSparks = {fLeftMotor, bLeftMotor};
@@ -148,7 +182,10 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
     bLeftMotor.close();
     gyro.close();
   }
-
+// // For aesthetic reasons, you should probably use Commands.run instead of new RunCommand, since the Commands factories are nicer to read
+// This method should be named configureSubsystemDefaults to be consistent with the other naming
+// drive.setVoltage is not a good idea to directly input joystick values into. You should instead scale the joystick values (between -1 and 1) and use them with WPILib's DifferentialDrive helper methods.
+//comments for michael 
   public CommandBase driveTeleop(Supplier<Double> speed, Supplier<Double> rotation){
     return run(() -> drive.arcadeDrive(speed.get(), rotation.get()));
   }
