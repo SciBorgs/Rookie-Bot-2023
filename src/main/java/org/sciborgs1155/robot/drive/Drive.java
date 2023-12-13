@@ -1,263 +1,194 @@
 package org.sciborgs1155.robot.drive;
 
-import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
+import static org.sciborgs1155.robot.Ports.DrivePorts.*;
 
 import com.ctre.phoenix.sensors.WPI_PigeonIMU;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.jni.CANSparkMaxJNI;
+
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
+
 import java.util.List;
-import java.util.function.DoubleSupplier;
-import org.photonvision.EstimatedRobotPose;
+import java.util.function.Supplier;
+
+import org.sciborgs1155.lib.constants.SparkUtils;
 import org.sciborgs1155.lib.failure.Fallible;
-import org.sciborgs1155.lib.failure.FaultBuilder;
 import org.sciborgs1155.lib.failure.HardwareFault;
-import org.sciborgs1155.robot.Constants;
-import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.Ports.DrivePorts;
 
-public class Drive extends SubsystemBase implements Fallible, Loggable, AutoCloseable {
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 
-  @Log private final ModuleIO frontLeft;
-  @Log private final ModuleIO frontRight;
-  @Log private final ModuleIO rearLeft;
-  @Log private final ModuleIO rearRight;
 
-  private final List<ModuleIO> modules;
 
-  // this should be a generic IMU class, once WPILib implements it
-  @Log private final WPI_PigeonIMU imu = new WPI_PigeonIMU(PIGEON);
+public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
+  private final CANSparkMax fRightMotor = 
+    SparkUtils.create(
+    FR_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+        s.getEncoder();
+    });
 
-  public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
+  private final CANSparkMax fLeftMotor = 
+  SparkUtils.create(
+    FL_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+        s.getEncoder();
+    });
 
-  // Odometry and pose estimation
-  private final SwerveDrivePoseEstimator odometry;
+  private final CANSparkMax bRightMotor = 
+  SparkUtils.create(
+    BR_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+    });
 
-  @Log private final Field2d field2d = new Field2d();
-  private final FieldObject2d[] modules2d;
+  private final CANSparkMax bLeftMotor = 
+  SparkUtils.create(
+    BL_DRIVE_PORT,
+    s -> {
+        s.setInverted(false);
+        s.setIdleMode(IdleMode.kBrake);
+        s.setOpenLoopRampRate(0);
+        s.setSmartCurrentLimit(50);
+    });
 
-  // Rate limiting
-  private final SlewRateLimiter xLimiter = new SlewRateLimiter(MAX_ACCEL);
-  private final SlewRateLimiter yLimiter = new SlewRateLimiter(MAX_ACCEL);
+  private final CANSparkMax[] rightSparks = {fRightMotor, bRightMotor};
+  private final CANSparkMax[] leftSparks = {fLeftMotor, bLeftMotor};
 
-  @Log private double speedMultiplier = 1;
+  private final MotorControllerGroup rightMotors = new MotorControllerGroup(rightSparks);
+  private final MotorControllerGroup leftMotors = new MotorControllerGroup(leftSparks);
 
-  public static Drive create() {
-    return Robot.isReal()
-        ? new Drive(
-            new MAXSwerveModule(
-                MODULE_NAMES[0], FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS[0]),
-            new MAXSwerveModule(
-                MODULE_NAMES[1], FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS[1]),
-            new MAXSwerveModule(
-                MODULE_NAMES[2], REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS[2]),
-            new MAXSwerveModule(
-                MODULE_NAMES[3], REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS[3]))
-        : new Drive(new SimModule(), new SimModule(), new SimModule(), new SimModule());
-  }
+  // Gyros
+  @Log private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(DrivePorts.PIGEON);
+  //Right and Left side encoders
+  private final RelativeEncoder rightEncoder = fRightMotor.getEncoder();
+  private final RelativeEncoder leftEncoder = fLeftMotor.getEncoder();
+  
+  @Log private final PIDController RdrivePID = new PIDController(kP, kI, kD);
+  @Log private final PIDController LdrivePID = new PIDController(kP,  kI, kD);
 
-  public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
-    this.frontLeft = frontLeft;
-    this.frontRight = frontRight;
-    this.rearLeft = rearLeft;
-    this.rearRight = rearRight;
+  @Log private final SimpleMotorFeedforward RdriveFF = new SimpleMotorFeedforward(kS, kV, kA);
+  @Log private final SimpleMotorFeedforward LdriveFF = new SimpleMotorFeedforward(kS, kV, kA);
 
-    modules = List.of(frontLeft, frontRight, rearLeft, rearRight);
-    modules2d = new FieldObject2d[modules.size()];
+  @Log private final DifferentialDrive drive = new DifferentialDrive(fLeftMotor, fRightMotor);
 
-    odometry =
-        new SwerveDrivePoseEstimator(kinematics, getHeading(), getModulePositions(), new Pose2d());
-
-    for (int i = 0; i < modules2d.length; i++) {
-      modules2d[i] = field2d.getObject("module-" + i);
-    }
-  }
+  
 
   /**
-   * Returns the currently-estimated pose of the robot.
-   *
-   * @return The pose.
+   * Encoders PID and FF controllers, -> mostly done by now, maybe there is something else about this that can be worked on later
+   * DifferentialDriveOdometry -> used DifferentialDrivePoseEstimator instead rn
+   * Getters for pose, encoder values
+   * Setters for setpoints and other important values
+   * Style
    */
+  
+
+  //sets up Odometry
+  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(ROBOT_TRACK);
+  DifferentialDriveWheelSpeeds speeds = new DifferentialDriveWheelSpeeds(0, 0);
+
+  @Log private final DifferentialDrivePoseEstimator odometry = 
+    new DifferentialDrivePoseEstimator(
+      kinematics,
+      gyro.getRotation2d(), 
+      leftEncoder.getPosition(), 
+      rightEncoder.getPosition(), 
+      new Pose2d(),
+          VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)), //these could probably be adjusted later, taken from wpilib docs
+          VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30)));
+
+  /** Creates a new Drive. */
+  public Drive(){
+    leftEncoder.setPositionConversionFactor(CONVERSION);
+    rightEncoder.setPositionConversionFactor(CONVERSION);
+    // Velocity conversion factor should be set to the exact same value as position conversion fact, times 60. NOTE FOR SELF - michael
+    leftEncoder.setVelocityConversionFactor(CONVERSION * 60);
+    leftEncoder.setVelocityConversionFactor(CONVERSION * 60);
+
+    rightMotors.setInverted(true);
+    
+    // AutoBuilder.configureLTV()
+
+    
+  }
+
+  public void setVoltage(double voltageR, double voltageL) {
+    rightMotors.setVoltage(MathUtil.clamp(voltageR, -MAX_VOLTAGE, MAX_VOLTAGE)); 
+    leftMotors.setVoltage(MathUtil.clamp(voltageL, -MAX_VOLTAGE, MAX_VOLTAGE));
+  }
+
+  public void setSpeed(DifferentialDriveWheelSpeeds speeds){
+    double lFF = LdriveFF.calculate(speeds.leftMetersPerSecond);
+    double rFF = RdriveFF.calculate(speeds.rightMetersPerSecond);
+
+    double lFB = LdrivePID.calculate(leftEncoder.getVelocity(), speeds.leftMetersPerSecond);
+    double rFB = RdrivePID.calculate(rightEncoder.getVelocity(), speeds.rightMetersPerSecond);
+
+    setVoltage(rFF+rFB, lFF+lFB);
+
+  }
+
+  public void resetGyro (){
+    gyro.reset();
+  }
+
+  public Rotation2d getRotation() {
+    return gyro.getRotation2d();
+  }
+
   public Pose2d getPose() {
     return odometry.getEstimatedPosition();
   }
 
-  /**
-   * Returns the heading of the robot, based on our pigeon
-   *
-   * @return A Rotation2d of our angle
-   */
-  public Rotation2d getHeading() {
-    return imu.getRotation2d();
-  }
-
-  /**
-   * Resets the odometry to the specified pose.
-   *
-   * @param pose The pose to which to set the odometry.
-   */
-  public void resetOdometry(Pose2d pose) {
-    odometry.resetPosition(getHeading(), getModulePositions(), pose);
-  }
-
-  /** Deadbands and squares inputs */
-  private static double scale(double input) {
-    input = MathUtil.applyDeadband(input, Constants.DEADBAND);
-    return Math.copySign(input * input, input);
-  }
-
-  /** Drives the robot based on a {@link DoubleSupplier} for x y and omega velocities */
-  public CommandBase drive(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier vOmega) {
-    return run(
-        () ->
-            drive(
-                ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xLimiter.calculate(scale(vx.getAsDouble()) * MAX_SPEED * speedMultiplier),
-                    yLimiter.calculate(scale(vy.getAsDouble()) * MAX_SPEED * speedMultiplier),
-                    scale(vOmega.getAsDouble()) * MAX_ANGULAR_SPEED * speedMultiplier,
-                    getHeading())));
-  }
-
-  /**
-   * Drives the robot based on profided {@link ChassisSpeeds}.
-   *
-   * <p>This method uses {@link Pose2d#log(Pose2d)} to reduce skew.
-   *
-   * @param speeds The desired chassis speeds.
-   */
-  public void drive(ChassisSpeeds speeds) {
-    var target =
-        new Pose2d(
-            speeds.vxMetersPerSecond * Constants.PERIOD,
-            speeds.vyMetersPerSecond * Constants.PERIOD,
-            Rotation2d.fromRadians(speeds.omegaRadiansPerSecond * Constants.PERIOD));
-
-    var twist = new Pose2d().log(target);
-
-    speeds =
-        new ChassisSpeeds(
-            twist.dx / Constants.PERIOD,
-            twist.dy / Constants.PERIOD,
-            twist.dtheta / Constants.PERIOD);
-
-    setModuleStates(kinematics.toSwerveModuleStates(speeds));
-  }
-
-  /**
-   * Sets the swerve ModuleStates.
-   *
-   * @param desiredStates The desired ModuleIO states.
-   */
-  public void setModuleStates(SwerveModuleState[] desiredStates) {
-    if (desiredStates.length != modules.size()) {
-      throw new IllegalArgumentException("desiredStates must have the same length as modules");
-    }
-
-    SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_SPEED);
-
-    for (int i = 0; i < modules.size(); i++) {
-      modules.get(i).setDesiredState(desiredStates[i]);
-    }
-  }
-
-  /** Resets the drive encoders to currently read a position of 0. */
-  public void resetEncoders() {
-    modules.forEach(ModuleIO::resetEncoders);
-  }
-
-  /** Zeroes the heading of the robot. */
-  public CommandBase zeroHeading() {
-    return runOnce(imu::reset);
-  }
-
-  /** Returns the pitch of the drive gyro */
-  public double getPitch() {
-    return imu.getPitch();
-  }
-
-  private SwerveModuleState[] getModuleStates() {
-    return modules.stream().map(ModuleIO::getState).toArray(SwerveModuleState[]::new);
-  }
-
-  private SwerveModulePosition[] getModulePositions() {
-    return modules.stream().map(ModuleIO::getPosition).toArray(SwerveModulePosition[]::new);
-  }
-
-  /** Updates pose estimation based on provided {@link EstimatedRobotPose} */
-  public void updateEstimates(EstimatedRobotPose... poses) {
-    for (int i = 0; i < poses.length; i++) {
-      odometry.addVisionMeasurement(poses[i].estimatedPose.toPose2d(), poses[i].timestampSeconds);
-      field2d.getObject("Cam-" + i + " Est Pose").setPose(poses[i].estimatedPose.toPose2d());
-    }
-  }
-
   @Override
   public void periodic() {
-    odometry.update(getHeading(), getModulePositions());
-
-    field2d.setRobotPose(getPose());
-
-    for (int i = 0; i < modules2d.length; i++) {
-      var module = modules.get(i);
-      var transform = new Transform2d(MODULE_OFFSET[i], module.getPosition().angle);
-      modules2d[i].setPose(getPose().transformBy(transform));
-    }
+    // This method will be called once per scheduler run
+    odometry.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
   }
 
   @Override
-  public void simulationPeriodic() {
-    imu.getSimCollection()
-        .addHeading(
-            Units.radiansToDegrees(
-                    kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond)
-                * Constants.PERIOD);
-  }
-
-  /** Stops drivetrain */
-  public CommandBase stop() {
-    return runOnce(() -> drive(new ChassisSpeeds()));
-  }
-
-  /** Sets the drivetrain to an "X" configuration, preventing movement */
-  public CommandBase lock() {
-    var front = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
-    var back = new SwerveModuleState(0, Rotation2d.fromDegrees(-45));
-    return run(() -> setModuleStates(new SwerveModuleState[] {front, back, back, front}));
-  }
-
-  /** Sets a new speed multiplier for the robot, this affects max cartesian and angular speeds */
-  public CommandBase setSpeedMultiplier(double multiplier) {
-    return runOnce(() -> speedMultiplier = multiplier);
-  }
-
-  @Override
-  public List<HardwareFault> getFaults() {
-    var builder = new FaultBuilder();
-    for (var module : modules) {
-      builder.register(module.getFaults());
-    }
-    return builder.build();
-  }
-
+  //closing everything that needs to be closed
   public void close() throws Exception {
-    frontLeft.close();
-    frontRight.close();
-    rearLeft.close();
-    rearRight.close();
-    imu.close();
+    fRightMotor.close();
+    fLeftMotor.close();
+    bRightMotor.close();
+    bLeftMotor.close();
+    gyro.close();
+  }
+// // For aesthetic reasons, you should probably use Commands.run instead of new RunCommand, since the Commands factories are nicer to read
+// This method should be named configureSubsystemDefaults to be consistent with the other naming
+// drive.setVoltage is not a good idea to directly input joystick values into. You should instead scale the joystick values (between -1 and 1) and use them with WPILib's DifferentialDrive helper methods.
+//comments for michael 
+  public CommandBase driveTeleop(Supplier<Double> speed, Supplier<Double> rotation){
+    return run(() -> drive.arcadeDrive(speed.get(), rotation.get()));
   }
 }

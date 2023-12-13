@@ -9,16 +9,15 @@ public final class Ports {
     public static final int RIGHT_STICK = 3;
   }
 
-  public static final class Drive {
-    public static final int FRONT_LEFT_DRIVE = 1;
-    public static final int REAR_LEFT_DRIVE = 38;
-    public static final int FRONT_RIGHT_DRIVE = 32;
-    public static final int REAR_RIGHT_DRIVE = 5;
+  public static final class DrivePorts {
+    // needs to be changed sometime soon
+    public static final int FR_DRIVE_PORT = -1;
+    public static final int FL_DRIVE_PORT = -1;
+    public static final int BR_DRIVE_PORT = -1;
+    public static final int BL_DRIVE_PORT = -1;
 
-    public static final int FRONT_LEFT_TURNING = 31;
-    public static final int REAR_LEFT_TURNING = 36;
-    public static final int FRONT_RIGHT_TURNING = 3;
-    public static final int REAR_RIGHT_TURNING = 40;
+    public static final int RIGHT_ENCODER_PORT = -1;
+    public static final int LEFT_ENCODER_PORT = -1;
 
     public static final int PIGEON = 42;
   }
