@@ -23,12 +23,16 @@ public class Intake extends SubsystemBase {
     return new Intake(new NoIntake());
   }
 
+  public CommandBase setSpeed(double speed) {
+    return run(() -> intake.setSpeed(speed));
+  }
+
   public CommandBase intake() {
-    return run(() -> intake.setSpeed(INTAKE_SPEED));
+    return setSpeed(INTAKE_SPEED);
   }
 
   public CommandBase outtake() {
-    return run(() -> intake.setSpeed(OUTTAKE_SPEED));
+    return setSpeed(OUTTAKE_SPEED);
   }
 
   @Override

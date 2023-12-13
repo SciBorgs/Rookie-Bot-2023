@@ -61,6 +61,7 @@ public class RealArm implements JointIO {
     motor.setVoltage(feedforward + feedback);
   }
 
+  @Override
   public State calculateGoalFromDistance(double distance) {
     return new State();
   }
