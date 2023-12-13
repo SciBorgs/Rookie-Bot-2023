@@ -47,6 +47,7 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
         s.setIdleMode(IdleMode.kBrake);
         s.setOpenLoopRampRate(0);
         s.setSmartCurrentLimit(50);
+        s.getEncoder();
     });
 
   private final CANSparkMax fLeftMotor = 
@@ -57,6 +58,7 @@ public class Drive extends SubsystemBase implements Loggable, AutoCloseable{
         s.setIdleMode(IdleMode.kBrake);
         s.setOpenLoopRampRate(0);
         s.setSmartCurrentLimit(50);
+        s.getEncoder();
     });
 
   private final CANSparkMax bRightMotor = 
