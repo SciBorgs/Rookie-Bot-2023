@@ -54,11 +54,6 @@ public class RealJoint implements JointIO {
   }
 
   @Override
-  public State calculateGoalFromDistance(double distance) {
-    return new State();
-  }
-
-  @Override
   public void close() {
     motor.close();
   }

@@ -2,7 +2,7 @@ package org.sciborgs1155.robot.arm;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 
-public interface JointIO {
+public interface JointIO extends AutoCloseable {
 
   /**
    * Gets the position of the arm.
@@ -40,7 +40,8 @@ public interface JointIO {
    * @param distance
    * @return The desired goal.
    */
-  public State calculateGoalFromDistance(double distance);
-
-  public void close();
+  default State calculateGoalFromDistance(double distance) {
+    return new State();
+  }
+  ;
 }

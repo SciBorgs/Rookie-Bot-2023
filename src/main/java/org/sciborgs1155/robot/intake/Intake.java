@@ -5,7 +5,7 @@ import static org.sciborgs1155.robot.intake.IntakeConstants.*;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Intake extends SubsystemBase {
+public class Intake extends SubsystemBase implements AutoCloseable {
   private final IntakeIO intake;
 
   public Intake(IntakeIO intake) {
@@ -34,4 +34,9 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {}
+
+  @Override
+  public void close() throws Exception {
+    intake.close();
+  }
 }

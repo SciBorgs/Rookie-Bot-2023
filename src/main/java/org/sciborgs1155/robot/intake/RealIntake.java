@@ -5,12 +5,10 @@
 package org.sciborgs1155.robot.intake;
 
 import static org.sciborgs1155.robot.Ports.Intake.*;
-import static org.sciborgs1155.robot.intake.IntakeConstants.*;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.Encoder;
 import org.sciborgs1155.lib.constants.SparkUtils;
 
 public class RealIntake implements IntakeIO {
@@ -23,16 +21,13 @@ public class RealIntake implements IntakeIO {
             s.setOpenLoopRampRate(0);
           });
 
-  private final Encoder rotationEncoder;
-
-  public RealIntake() {
-    rotationEncoder = new Encoder(ENCODER[0], ENCODER[1]);
-
-    rotationEncoder.setDistancePerPulse(CONVERSION);
-  }
-
   @Override
   public void setSpeed(double speed) {
     wheels.set(MathUtil.clamp(speed, -1, 1));
+  }
+
+  @Override
+  public void close() {
+    wheels.close();
   }
 }

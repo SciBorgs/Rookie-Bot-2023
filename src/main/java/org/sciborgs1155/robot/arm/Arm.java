@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.TrapezoidProfileCommand;
 import org.sciborgs1155.lib.DeferredCommand;
 import org.sciborgs1155.robot.Robot;
 
-public class Arm extends SubsystemBase {
+public class Arm extends SubsystemBase implements AutoCloseable {
   private final JointIO arm;
 
   public Arm(JointIO arm) {
@@ -70,5 +70,10 @@ public class Arm extends SubsystemBase {
                 arm::setState,
                 this),
         this);
+  }
+
+  @Override
+  public void close() throws Exception {
+    arm.close();
   }
 }
