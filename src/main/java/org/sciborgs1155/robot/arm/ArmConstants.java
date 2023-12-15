@@ -6,7 +6,6 @@ import org.sciborgs1155.lib.constants.ArmFFConstants;
 import org.sciborgs1155.lib.constants.PIDConstants;
 import org.sciborgs1155.robot.Constants;
 
-/** Add your docs here. */
 public class ArmConstants {
   public static final double CONVERSION = 2.0 * Math.PI / Constants.THROUGHBORE_PPR;
   public static final Constraints CONSTRAINTS = new Constraints(3, 2);

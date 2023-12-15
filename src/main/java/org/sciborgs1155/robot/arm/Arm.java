@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.TrapezoidProfileCommand;
 import org.sciborgs1155.lib.DeferredCommand;
 import org.sciborgs1155.robot.Robot;
 
-/** Add your docs here. */
 public class Arm extends SubsystemBase {
   private final JointIO arm;
 
@@ -19,7 +18,7 @@ public class Arm extends SubsystemBase {
   }
 
   public static Arm create() {
-    return Robot.isReal() ? new Arm(new RealArm()) : new Arm(new SimArm());
+    return Robot.isReal() ? new Arm(new RealJoint()) : new Arm(new SimJoint());
   }
 
   public static Arm createNone() {

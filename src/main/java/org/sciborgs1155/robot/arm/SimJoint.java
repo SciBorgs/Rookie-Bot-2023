@@ -11,13 +11,13 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import org.sciborgs1155.robot.Constants;
 
-public class SimArm implements JointIO {
-  private final SingleJointedArmSim armSim;
+public class SimJoint implements JointIO {
+  private final SingleJointedArmSim jointSim;
   private final PIDController pid;
   private final ArmFeedforward ff;
 
-  public SimArm() {
-    armSim =
+  public SimJoint() {
+    jointSim =
         new SingleJointedArmSim(
             GEARBOX,
             GEARING,
@@ -32,12 +32,12 @@ public class SimArm implements JointIO {
 
   @Override
   public double getAngle() {
-    return armSim.getAngleRads();
+    return jointSim.getAngleRads();
   }
 
   @Override
   public double getVelocity() {
-    return armSim.getVelocityRadPerSec();
+    return jointSim.getVelocityRadPerSec();
   }
 
   @Override
@@ -54,8 +54,8 @@ public class SimArm implements JointIO {
   public void setState(State setpoint) {
     double feedforward = ff.calculate(setpoint.position, setpoint.velocity);
     double feedback = pid.calculate(getVelocity(), setpoint.velocity);
-    armSim.setInputVoltage(feedforward + feedback);
-    armSim.update(Constants.PERIOD);
+    jointSim.setInputVoltage(feedforward + feedback);
+    jointSim.update(Constants.PERIOD);
   }
 
   @Override
