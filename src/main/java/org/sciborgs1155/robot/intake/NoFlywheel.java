@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.intake;
 
-public class NoIntake implements IntakeIO {
+public class NoFlywheel implements FlywheelIO {
   public void setSpeed(double intake) {}
 
   @Override

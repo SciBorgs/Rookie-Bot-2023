@@ -1,23 +1,23 @@
 package org.sciborgs1155.robot.intake;
 
-import static org.sciborgs1155.robot.intake.IntakeConstants.*;
+import static org.sciborgs1155.robot.intake.FlywheelConstants.*;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Intake extends SubsystemBase implements AutoCloseable {
-  private final IntakeIO intake;
+public class Flywheel extends SubsystemBase implements AutoCloseable {
+  private final FlywheelIO intake;
 
-  public Intake(IntakeIO intake) {
+  public Flywheel(FlywheelIO intake) {
     this.intake = intake;
   }
 
-  public static Intake create() {
-    return new Intake(new RealIntake());
+  public static Flywheel create() {
+    return new Flywheel(new RealFlywheel());
   }
 
-  public static Intake createNone() {
-    return new Intake(new NoIntake());
+  public static Flywheel createNone() {
+    return new Flywheel(new NoFlywheel());
   }
 
   public CommandBase setSpeed(double speed) {

@@ -48,7 +48,7 @@ public class Arm extends SubsystemBase implements AutoCloseable {
   /**
    * Moves arm directly to a goal given a distance.
    *
-   * @param distance
+   * @param distance m/s
    * @return The command to move to the goal.
    */
   public CommandBase goToAngleFromDistance(double distance) {

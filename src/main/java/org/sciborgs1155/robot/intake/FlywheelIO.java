@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.intake;
 
-public interface IntakeIO extends AutoCloseable {
+public interface FlywheelIO extends AutoCloseable {
   /**
    * Run the wheels at a desired speed.
    *

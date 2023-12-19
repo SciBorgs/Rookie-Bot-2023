@@ -10,6 +10,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Encoder;
 import org.sciborgs1155.lib.constants.SparkUtils;
 
@@ -51,6 +52,12 @@ public class RealJoint implements JointIO {
     double feedforward = ff.calculate(setpoint.position, setpoint.velocity);
     double feedback = pid.calculate(rotationEncoder.getRate(), setpoint.velocity);
     motor.setVoltage(feedforward + feedback);
+  }
+
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    JointIO.super.initSendable(builder);
+    rotationEncoder.initSendable(builder);
   }
 
   @Override

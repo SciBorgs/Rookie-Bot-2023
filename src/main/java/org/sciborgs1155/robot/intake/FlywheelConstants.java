@@ -5,7 +5,7 @@ import org.sciborgs1155.lib.constants.ArmFFConstants;
 import org.sciborgs1155.lib.constants.PIDConstants;
 import org.sciborgs1155.robot.Constants;
 
-public class IntakeConstants {
+public class FlywheelConstants {
   public static final double INTAKE_SPEED = 0;
   public static final double OUTTAKE_SPEED = -0;
 

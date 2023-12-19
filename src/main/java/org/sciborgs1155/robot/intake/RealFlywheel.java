@@ -11,7 +11,7 @@ import com.revrobotics.CANSparkMax.IdleMode;
 import edu.wpi.first.math.MathUtil;
 import org.sciborgs1155.lib.constants.SparkUtils;
 
-public class RealIntake implements IntakeIO {
+public class RealFlywheel implements FlywheelIO {
   private final CANSparkMax wheels =
       SparkUtils.create(
           WHEEL_MOTOR,
